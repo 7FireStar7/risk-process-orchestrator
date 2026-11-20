@@ -1,0 +1,11 @@
+# то что никогда не попадет в github
+.env
+.venv/
+__pycache__/
+*.pyc
+data/
+incoming/
+*.csv
+*.xls
+*.xlsx
+!Data_description*.xlsx
