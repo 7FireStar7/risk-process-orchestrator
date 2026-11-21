@@ -1,0 +1,630 @@
+service: bb_load
+registry_version: 1
+source_description: Data_description_1.xlsx
+defaults:
+  severity_levels:
+  - OK
+  - WARNING
+  - ERROR
+  missing_column_severity: равна серьёзности столбца (ERROR-столбец отсутствует → ERROR)
+  empty_value_severity: равна серьёзности столбца
+  presence_only_missing_severity: WARNING
+  process_status: худший из статусов шагов
+  type_note: type и date_format выведены по небольшой выборке — сверить на полных файлах
+  sentinel_note: sentinel_values — заглушки, которые не считаются ошибкой; для дат сравнивается дата без времени
+tables:
+  cbonds_tradings_stocks:
+    source: cbonds
+    file_format:
+      delimiter: $
+      encoding: utf-8
+      header: true
+      skip_empty_lines: true
+      record_wrapped_in_quotes: true
+      record_terminator_suffix: ;
+      quirks:
+      - запись целиком может быть в кавычках с удвоенными внутри
+      - переносы строк внутри полей
+      - проверить на полном файле
+      expected_columns: 47
+    columns:
+    - name: id
+      severity: ERROR
+      meaning: Технический уникальный ID записи в базе.
+      type: integer
+      unique: true
+    - name: buying_quote
+      severity: WARNING
+      meaning: Цена покупки
+      type: number
+    - name: change_1_day
+      severity: WARNING
+      meaning: Нужны для аналитики
+      type: number
+    - name: change_30_day
+      severity: WARNING
+      meaning: Нужны для аналитики
+      type: number
+    - name: change_365_day
+      severity: WARNING
+      meaning: Нужны для аналитики
+      type: number
+    - name: currency_id
+      severity: ERROR
+      meaning: ID валюты
+      type: integer
+    - name: currency_name
+      severity: ERROR
+      meaning: Название валюты
+      type: text
+    - name: isin
+      severity: ERROR
+      meaning: Международный идентификатор бумаги (ISIN). Главный ключ для связи с позициями брокеров
+      type: text
+    - name: last_price
+      severity: ERROR
+      meaning: Цена последней сделки
+      type: number
+    - name: max_price
+      severity: WARNING
+      meaning: Максимальная цена за торговую сессию.
+      type: number
+    - name: min_price
+      severity: WARNING
+      meaning: Минимальная цена за торговую сессию.
+      type: number
+    - name: open_price
+      severity: WARNING
+      meaning: Цена на открытии торгов.
+      type: number
+    - name: overturn
+      severity: WARNING
+      meaning: Оборот торгов (в штуках).
+      type: integer
+    - name: place_id
+      severity: WARNING
+      meaning: ID биржи (площадки)
+      type: integer
+    - name: selling_quote
+      severity: WARNING
+      meaning: Цена продажи
+      type: number
+    - name: trading_date
+      severity: ERROR
+      meaning: Дата, на которую актуальна цена
+      type: date
+      date_format: YYYY-MM-DD HH:MI:SS
+    - name: operdate
+      severity: WARNING
+      meaning: Операционная дата
+      type: date
+      date_format: YYYY-MM-DD HH:MI:SS
+    presence_only:
+    - agreement_number
+    - avar_price
+    - begin_circulation_micex
+    - currency_name_rus
+    - emission_full_name_eng
+    - emission_full_name_rus
+    - emission_id
+    - emission_name_eng
+    - emission_name_rus
+    - emitent_full_name_eng
+    - emitent_full_name_rus
+    - emitent_id
+    - emitent_name_eng
+    - emitent_name_rus
+    - end_circulation_micex
+    - kod_micex
+    - kot_micex
+    - micex
+    - micex_marketprice3
+    - place_full_name_eng
+    - place_full_name_rus
+    - place_name_eng
+    - place_name_rus
+    - trading_time
+    - update_time
+    - row_hash
+    - stock_full_id
+    - updated_at
+    - created_at
+    unclassified:
+    - overturn_rur
+    unclassified_note: Не описаны и не помечены «только наличие» — решить; до решения проверяются как «только наличие»
+    conflicts:
+    - operdate
+    conflicts_note: Столбец описан (ERROR/WARNING) и одновременно попадает в диапазон «только наличие»; применяется описание
+  olb_rtsposition:
+    source: olb
+    file_format:
+      delimiter: ;
+      encoding: utf-8
+      header: true
+      skip_empty_lines: true
+      expected_columns: 19
+    columns:
+    - name: account
+      severity: ERROR
+      meaning: Номер клиентского счёта на срочном рынке (RTS*…)
+      type: text
+      note: Связь с olb_rtsclients.account (в выборке не пересеклись — проверить)
+    - name: instr_short
+      severity: ERROR
+      meaning: Краткий код инструмента (фьючерс/опцион)
+      type: text
+      note: Связь с olb_rtscontract.instr_short и olb_rtsparameters.short_isin
+    - name: mat_date
+      severity: WARNING
+      meaning: Дата погашения (экспирации) инструмента
+      type: date
+      date_format: DD.MM.YYYY H:MI
+    - name: open_net
+      severity: WARNING
+      meaning: Чистая позиция на начало дня
+      type: number
+      note: Гипотеза по названию
+    - name: cur_net
+      severity: ERROR
+      meaning: Текущая чистая позиция
+      type: number
+      note: Гипотеза по названию
+    - name: plan_net_pos_est
+      severity: WARNING
+      meaning: Плановая чистая позиция (оценка)
+      type: number
+      note: В выборке значения до 197 млн — проверить на выбросы
+    - name: var_marg
+      severity: WARNING
+      meaning: Вариационная маржа
+      type: number
+      note: Гипотеза по названию
+    - name: eff_price
+      severity: WARNING
+      meaning: Эффективная цена позиции
+      type: number
+      note: Гипотеза по названию
+    - name: price
+      severity: ERROR
+      meaning: Текущая цена инструмента
+      type: number
+    - name: curr
+      severity: ERROR
+      meaning: Валюта
+      type: text
+    - name: market_risk
+      severity: ERROR
+      meaning: Коэффициент рыночного риска (1)
+      type: number
+      note: Три коэффициента market_risk/1/2 — смысл уточнить
+    - name: market_risk1
+      severity: ERROR
+      meaning: Коэффициент рыночного риска (2)
+      type: number
+      note: Смысл уточнить
+    - name: market_risk2
+      severity: ERROR
+      meaning: Коэффициент рыночного риска (3)
+      type: number
+      note: Смысл уточнить
+    - name: lk1
+      severity: WARNING
+      meaning: Показатель lk1 (расшифровка неизвестна)
+      type: number
+      note: Смысл неизвестен — уточнить
+    - name: lk2
+      severity: WARNING
+      meaning: Показатель lk2 (расшифровка неизвестна)
+      type: number
+      note: Смысл неизвестен — уточнить
+    - name: actualdate
+      severity: ERROR
+      meaning: Дата, на которую актуальны данные
+      type: date
+      date_format: YYYYMMDD
+      note: Формат YYYYMMDD, в остальных таблицах DD.MM.YYYY
+    - name: key
+      severity: ERROR
+      meaning: Уникальный ключ записи (счёт + инструмент + UUID)
+      type: text
+      unique: true
+      note: Проверять уникальность
+    - name: operdate
+      severity: WARNING
+      meaning: Операционная дата загрузки
+      type: date
+      date_format: DD.MM.YYYY H:MI
+    presence_only:
+    - partition_actualdate
+  olb_rtsclients:
+    source: olb
+    file_format:
+      delimiter: ;
+      encoding: utf-8
+      header: true
+      skip_empty_lines: true
+      expected_columns: 27
+    columns:
+    - name: account
+      severity: ERROR
+      meaning: Номер клиентского счёта (RTS*…)
+      type: text
+    - name: limit_type
+      severity: WARNING
+      meaning: Тип лимита
+      type: integer
+      note: Гипотеза; в выборке везде 1
+    - name: last_open_pos_limit
+      severity: WARNING
+      meaning: Лимит открытых позиций (предыдущий)
+      type: number
+      note: Гипотеза по названию
+    - name: open_pos_limit
+      severity: ERROR
+      meaning: Лимит открытых позиций
+      type: number
+      note: Гипотеза по названию
+    - name: plan_net_pos
+      severity: WARNING
+      meaning: Плановая чистая позиция
+      type: number
+      note: Гипотеза по названию
+    - name: cur_net_pos
+      severity: ERROR
+      meaning: Текущая чистая позиция
+      type: number
+      note: Гипотеза по названию
+    - name: cur_net_pos_forbids
+      severity: WARNING
+      meaning: Чистая позиция с учётом запретов
+      type: number
+      note: Смысл уточнить; в выборке всегда 0
+    - name: cur_net_pos_foropenpos
+      severity: WARNING
+      meaning: Чистая позиция для открытия позиций
+      type: number
+      note: Смысл уточнить; в выборке всегда 0
+    - name: var_margin_reserve
+      severity: WARNING
+      meaning: Резерв вариационной маржи
+      type: number
+      note: Гипотеза по названию
+    - name: income
+      severity: WARNING
+      meaning: Доход (результат)
+      type: number
+      note: Может быть отрицательным
+    - name: fee
+      severity: WARNING
+      meaning: Комиссия
+      type: number
+    - name: fee_reserve
+      severity: WARNING
+      meaning: Резерв комиссии
+      type: number
+      note: В выборке всегда 0
+    - name: option_prem
+      severity: WARNING
+      meaning: Премия по опционам
+      type: number
+      note: В выборке всегда 0
+    - name: coef_go
+      severity: WARNING
+      meaning: Коэффициент гарантийного обеспечения
+      type: number
+      note: Гипотеза; в выборке везде 1
+    - name: cur
+      severity: ERROR
+      meaning: Валюта
+      type: text
+    - name: var_margin
+      severity: WARNING
+      meaning: Вариационная маржа
+      type: number
+      note: В выборке всегда 0
+    - name: cash_begin
+      severity: WARNING
+      meaning: Денежные средства на начало дня
+      type: number
+      note: Может быть отрицательным
+    - name: kds
+      severity: WARNING
+      meaning: Коэффициент kds (расшифровка неизвестна)
+      type: number
+      note: Смысл неизвестен — уточнить
+    - name: blocked
+      severity: WARNING
+      meaning: Заблокированные средства
+      type: number
+      note: Гипотеза по названию
+    - name: var_m_oldclear
+      severity: WARNING
+      meaning: Вариационная маржа по прошлому клирингу
+      type: number
+      note: Гипотеза; может быть отрицательной
+    - name: x_port
+      severity: WARNING
+      meaning: Параметр x_port (расшифровка неизвестна)
+      type: number
+      note: Смысл неизвестен — уточнить
+    - name: y_port
+      severity: WARNING
+      meaning: Параметр y_port (расшифровка неизвестна)
+      type: number
+      note: Смысл неизвестен — уточнить
+    - name: actualdate
+      severity: ERROR
+      meaning: Дата, на которую актуальны данные
+      type: date
+      date_format: DD.MM.YYYY
+      note: Формат DD.MM.YYYY
+    - name: key
+      severity: ERROR
+      meaning: Ключ записи (номер счёта без префикса RTS*)
+      type: text
+      unique: true
+      note: Проверять уникальность
+    - name: operdate
+      severity: WARNING
+      meaning: Операционная дата загрузки
+      type: date
+      date_format: DD.MM.YYYY H:MI
+    presence_only:
+    - stock
+    - partition_actualdate
+  olb_rtscontract:
+    source: olb
+    file_format:
+      delimiter: ;
+      encoding: utf-8
+      header: true
+      skip_empty_lines: true
+      expected_columns: 40
+    columns:
+    - name: base_asset
+      severity: WARNING
+      meaning: Код базового актива
+      type: text
+    - name: extb_price
+      severity: WARNING
+      meaning: Цена внебиржевая (extb)
+      type: number
+      note: Смысл уточнить
+    - name: go_buy
+      severity: WARNING
+      meaning: Гарантийное обеспечение для покупки
+      type: number
+      note: Гипотеза по названию
+    - name: go_sell
+      severity: WARNING
+      meaning: Гарантийное обеспечение для продажи
+      type: number
+      note: Гипотеза по названию
+    - name: bgop
+      severity: WARNING
+      meaning: Базовое ГО (bgop)
+      type: number
+      note: Смысл уточнить
+    - name: bgonp
+      severity: WARNING
+      meaning: Базовое ГО (bgonp)
+      type: number
+      note: Смысл уточнить; в выборке всегда 0
+    - name: cur
+      severity: ERROR
+      meaning: Валюта контракта
+      type: text
+      note: В выборке есть значение USR — проверить справочник валют
+    - name: vol
+      severity: WARNING
+      meaning: Объём (vol)
+      type: number
+      note: Смысл уточнить
+    - name: mat_date
+      severity: ERROR
+      meaning: Дата погашения (экспирации)
+      type: date
+      date_format: DD.MM.YYYY H:MI
+      note: Формат DD.MM.YYYY H:MM
+    - name: till_mat_days
+      severity: WARNING
+      meaning: Дней до погашения
+      type: integer
+    - name: instr_short
+      severity: ERROR
+      meaning: Краткий код инструмента
+      type: text
+      note: Связь с olb_rtsposition.instr_short
+    - name: isin
+      severity: ERROR
+      meaning: Идентификатор инструмента (ISIN/код контракта)
+      type: text
+      note: У деривативов не совпадает по формату с isin акций из cbonds
+    - name: class
+      severity: WARNING
+      meaning: Класс инструмента (Фьючерс/Опцион Call и т.д.)
+      type: text
+    - name: clearing_quote
+      severity: ERROR
+      meaning: Клиринговая котировка (расчётная цена)
+      type: number
+      note: Гипотеза по названию
+    - name: lot
+      severity: ERROR
+      meaning: Размер лота
+      type: number
+    - name: prod_type
+      severity: WARNING
+      meaning: Тип продукта (Index, ASTS…)
+      type: text
+    - name: option_type
+      severity: WARNING
+      meaning: Тип опциона
+      type: text
+      note: Пусто у фьючерсов — норма; обязателен только для опционов (условное правило)
+      required_when:
+        column: class
+        contains: Опцион
+    - name: strike
+      severity: WARNING
+      meaning: Цена исполнения (страйк)
+      type: number
+      note: 0 у фьючерсов — норма; важен только для опционов
+      required_when:
+        column: class
+        contains: Опцион
+    - name: price_min_step
+      severity: ERROR
+      meaning: Минимальный шаг цены
+      type: number
+    - name: step_price
+      severity: ERROR
+      meaning: Стоимость шага цены
+      type: number
+    - name: last_p_2
+      severity: WARNING
+      meaning: Цена последней сделки
+      type: number
+      note: Гипотеза по названию
+    - name: close_p
+      severity: WARNING
+      meaning: Цена закрытия
+      type: number
+      note: Гипотеза по названию
+    - name: actualdate
+      severity: ERROR
+      meaning: Дата, на которую актуальны данные
+      type: date
+      date_format: DD.MM.YYYY
+      note: Формат DD.MM.YYYY
+    - name: key
+      severity: ERROR
+      meaning: Ключ записи (в выборке равен коду контракта)
+      type: text
+      unique: true
+      note: Проверять уникальность
+    - name: operdate
+      severity: WARNING
+      meaning: Операционная дата загрузки
+      type: date
+      date_format: DD.MM.YYYY H:MI
+    presence_only:
+    - descrip
+    - descrip_ext
+    - base_a_group
+    - contractgroupname
+    - anon_trade
+    - mat_date_beg
+    - last_trade_date
+    - trda_date
+    - session_state
+    - status
+    - status_kl
+    - securityclassdescription
+    - price_type
+    - code_extb
+    - partition_actualdate
+  olb_rtsparameters:
+    source: olb
+    file_format:
+      delimiter: ;
+      encoding: utf-8
+      header: true
+      skip_empty_lines: true
+      expected_columns: 27
+    columns:
+    - name: actualdate
+      severity: ERROR
+      meaning: Дата, на которую актуальны данные
+      type: date
+      date_format: DD.MM.YYYY H:MI
+      note: Формат DD.MM.YYYY H:MM
+    - name: currency
+      severity: ERROR
+      meaning: Валюта
+      type: text
+      note: В выборке есть значение USR — проверить справочник валют
+    - name: turnover
+      severity: WARNING
+      meaning: Оборот торгов
+      type: number
+      note: Гипотеза по названию
+    - name: limit_up
+      severity: WARNING
+      meaning: Верхний предел цены
+      type: number
+      note: Гипотеза по названию
+    - name: mat_date
+      severity: ERROR
+      meaning: Дата погашения (экспирации)
+      type: date
+      date_format: DD.MM.YYYY H:MI
+      note: Для бессрочных фьючерсов 01.01.1970 — заглушка, не ошибка
+      sentinel_values:
+      - 01.01.1970
+    - name: short_isin
+      severity: ERROR
+      meaning: Краткий код контракта
+      type: text
+      note: Связь с olb_rtsposition.instr_short
+    - name: limit_down
+      severity: WARNING
+      meaning: Нижний предел цены
+      type: number
+      note: Гипотеза по названию
+    - name: key
+      severity: ERROR
+      meaning: Уникальный ключ записи (UUID)
+      type: text
+      unique: true
+      note: Проверять уникальность
+    - name: open_pos_count
+      severity: WARNING
+      meaning: Открытый интерес (число открытых позиций)
+      type: number
+      note: Гипотеза по названию
+    - name: price_min_step
+      severity: WARNING
+      meaning: Минимальный шаг цены
+      type: number
+    - name: base_asset_type
+      severity: WARNING
+      meaning: Тип базового актива (Индекс, Валюта…)
+      type: text
+    - name: till_mat_days
+      severity: WARNING
+      meaning: Дней до погашения
+      type: integer
+      note: Для бессрочных фьючерсов -20033 — заглушка, не ошибка
+      sentinel_values:
+      - '-20033'
+    - name: contract_volume
+      severity: WARNING
+      meaning: Объём контракта
+      type: number
+      note: Смысл уточнить
+    - name: step_price
+      severity: WARNING
+      meaning: Стоимость шага цены
+      type: number
+    - name: base_contract_code
+      severity: WARNING
+      meaning: Код базового контракта
+      type: text
+    - name: operdate
+      severity: WARNING
+      meaning: Операционная дата загрузки
+      type: date
+      date_format: DD.MM.YYYY H:MI
+    presence_only:
+    - central_strike
+    - option_type
+    - strike
+    - strike_step
+    - contract_group_name
+    - im_buy
+    - imp
+    - contract_name
+    - imnp
+    - class
+    - partition_actualdate
