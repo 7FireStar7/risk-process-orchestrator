@@ -20,13 +20,13 @@ tables:
       encoding: utf-8
       header: true
       skip_empty_lines: true
-      record_wrapped_in_quotes: true
-      record_terminator_suffix: ;
       quirks:
-      - запись целиком может быть в кавычках с удвоенными внутри
-      - переносы строк внутри полей
-      - проверить на полном файле
+      - заголовок и значения могут быть в кавычках
+      - в значениях бывают переносы строк
+      - на копиях файла после пересохранения встречается «обёрнутый» формат — для него есть запасной разбор
       expected_columns: 47
+      quoting: 'стандартный CSV: значения в кавычках, кавычки внутри удвоены, переносы строк внутри значений'
+      allow_wrapped_fallback: true
     columns:
     - name: id
       severity: ERROR

@@ -19,6 +19,7 @@ class ReadResult:
     rows_bad_length: int = 0        # записей с неверным числом полей (отброшено)
     stray_quotes: int = 0           # одиночных кавычек внутри значений (удалено)
     bad_samples: list = field(default_factory=list)
+    mode: str = "standard"          # standard | wrapped (запасной разбор)
 
 
 def _is_blank(line: str) -> bool:
@@ -108,7 +109,21 @@ def read_wrapped(path: str, fmt: dict) -> ReadResult:
     return res
 
 
+def _score(res: ReadResult, expected) -> tuple:
+    header_ok = (not expected) or len(res.header) == expected
+    return (header_ok, -res.rows_bad_length, len(res.rows))
+
+
 def read_file(path: str, fmt: dict) -> ReadResult:
-    if fmt.get("record_wrapped_in_quotes"):
-        return read_wrapped(path, fmt)
-    return read_plain(path, fmt)
+    """Сначала обычный CSV-разбор. Если файл выглядит повреждённым и в реестре
+    разрешён запасной вариант (allow_wrapped_fallback), пробуем разбор «обёрнутых»
+    записей и берём тот результат, который лучше."""
+    plain = read_plain(path, fmt)
+    if not fmt.get("allow_wrapped_fallback"):
+        return plain
+    expected = fmt.get("expected_columns")
+    if (not expected or len(plain.header) == expected) and plain.rows_bad_length == 0:
+        return plain
+    wrapped = read_wrapped(path, fmt)
+    wrapped.mode = "wrapped"
+    return wrapped if _score(wrapped, expected) > _score(plain, expected) else plain

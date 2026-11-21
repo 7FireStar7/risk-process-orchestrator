@@ -52,7 +52,7 @@ def process(conn, pid, sids, table, entry, path):
     issues = structural_issues(rules, res)
     write_issues(conn, pid, sids["read"], table, issues)
     st = finish_step(conn, sids["read"],
-                     f"строк данных: {len(res.rows)}, пустых строк пропущено: {res.lines_blank}",
+                     f"режим: {res.mode}, строк данных: {len(res.rows)}, пустых строк пропущено: {res.lines_blank}",
                      read=len(res.rows) + res.rows_bad_length, rejected=res.rows_bad_length)
     blocking = any(i[2] == "NO_DATA" or (i[2] == "MISSING_COLUMN" and i[1] == "ERROR") for i in issues)
     if blocking:
