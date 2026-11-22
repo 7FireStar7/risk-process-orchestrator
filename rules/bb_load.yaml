@@ -80,7 +80,8 @@ tables:
     - name: overturn
       severity: WARNING
       meaning: Оборот торгов (в штуках).
-      type: integer
+      type: number
+      note: 'Оборот: дробное число (тип исправлен с integer после проверки на полном файле)'
     - name: place_id
       severity: WARNING
       meaning: ID биржи (площадки)
@@ -148,7 +149,7 @@ tables:
       severity: ERROR
       meaning: Номер клиентского счёта на срочном рынке (RTS*…)
       type: text
-      note: Связь с olb_rtsclients.account (в выборке не пересеклись — проверить)
+      note: Связь с olb_rtsclients.account — проверить
     - name: instr_short
       severity: ERROR
       meaning: Краткий код инструмента (фьючерс/опцион)
@@ -173,7 +174,7 @@ tables:
       severity: WARNING
       meaning: Плановая чистая позиция (оценка)
       type: number
-      note: В выборке значения до 197 млн — проверить на выбросы
+      note: Проверить на выбросы
     - name: var_marg
       severity: WARNING
       meaning: Вариационная маржа
@@ -253,7 +254,7 @@ tables:
       severity: WARNING
       meaning: Тип лимита
       type: integer
-      note: Гипотеза; в выборке везде 1
+      note: Гипотеза о смысле — уточнить
     - name: last_open_pos_limit
       severity: WARNING
       meaning: Лимит открытых позиций (предыдущий)
@@ -278,12 +279,12 @@ tables:
       severity: WARNING
       meaning: Чистая позиция с учётом запретов
       type: number
-      note: Смысл уточнить; в выборке всегда 0
+      note: Смысл уточнить
     - name: cur_net_pos_foropenpos
       severity: WARNING
       meaning: Чистая позиция для открытия позиций
       type: number
-      note: Смысл уточнить; в выборке всегда 0
+      note: Смысл уточнить
     - name: var_margin_reserve
       severity: WARNING
       meaning: Резерв вариационной маржи
@@ -302,17 +303,17 @@ tables:
       severity: WARNING
       meaning: Резерв комиссии
       type: number
-      note: В выборке всегда 0
+      note: Гипотеза по названию
     - name: option_prem
       severity: WARNING
       meaning: Премия по опционам
       type: number
-      note: В выборке всегда 0
+      note: Гипотеза по названию
     - name: coef_go
       severity: WARNING
       meaning: Коэффициент гарантийного обеспечения
       type: number
-      note: Гипотеза; в выборке везде 1
+      note: Гипотеза о смысле — уточнить
     - name: cur
       severity: ERROR
       meaning: Валюта
@@ -321,7 +322,7 @@ tables:
       severity: WARNING
       meaning: Вариационная маржа
       type: number
-      note: В выборке всегда 0
+      note: Гипотеза по названию
     - name: cash_begin
       severity: WARNING
       meaning: Денежные средства на начало дня
@@ -409,12 +410,12 @@ tables:
       severity: WARNING
       meaning: Базовое ГО (bgonp)
       type: number
-      note: Смысл уточнить; в выборке всегда 0
+      note: Смысл уточнить
     - name: cur
       severity: ERROR
       meaning: Валюта контракта
       type: text
-      note: В выборке есть значение USR — проверить справочник валют
+      note: Проверить справочник валют
     - name: vol
       severity: WARNING
       meaning: Объём (vol)
@@ -499,7 +500,7 @@ tables:
       note: Формат DD.MM.YYYY
     - name: key
       severity: ERROR
-      meaning: Ключ записи (в выборке равен коду контракта)
+      meaning: Ключ записи (возможно, совпадает с кодом контракта — уточнить)
       type: text
       unique: true
       note: Проверять уникальность
@@ -543,7 +544,7 @@ tables:
       severity: ERROR
       meaning: Валюта
       type: text
-      note: В выборке есть значение USR — проверить справочник валют
+      note: Проверить справочник валют
     - name: turnover
       severity: WARNING
       meaning: Оборот торгов
