@@ -12,8 +12,9 @@ from bb_load.registry import load_registry, sync_rules, load_rules
 from bb_load.reader import read_file
 from bb_load.loader import ensure_raw_table, copy_rows
 from bb_load.validator import structural_issues, build_checks, run_checks
+from bb_load.stager import ensure_stg_table, stage_rows
 
-STEPS = [("read", 1), ("load", 2), ("validate", 3)]
+STEPS = [("read", 1), ("load", 2), ("validate", 3), ("stage", 4)]
 
 
 def start_step(conn, sid):
@@ -77,6 +78,17 @@ def process(conn, pid, sids, table, entry, path):
         finish_step(conn, sids["validate"], f"ошибка проверки: {e}", status="ERROR")
         return
     finish_step(conn, sids["validate"], f"найдено проблем: {len(found)}", read=len(res.rows))
+    # ---- шаг 4: раскладка в чистую таблицу stg_<таблица> ----
+    start_step(conn, sids["stage"])
+    try:
+        ensure_stg_table(conn, table, rules)
+        ins, rej, tot = stage_rows(conn, table, pid, res.header, rules)
+    except Exception as e:
+        conn.rollback()
+        finish_step(conn, sids["stage"], f"ошибка раскладки: {e}", status="ERROR")
+        return
+    finish_step(conn, sids["stage"], f"в stg_{table}: {ins}, отклонено: {rej}",
+                read=tot, loaded=ins, rejected=rej, status="WARNING" if rej else "OK")
 
 
 def report(conn, pid):
