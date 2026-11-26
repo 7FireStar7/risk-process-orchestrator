@@ -425,8 +425,8 @@ tables:
       severity: ERROR
       meaning: Дата погашения (экспирации)
       type: date
-      date_format: DD.MM.YYYY H:MI
-      note: Формат DD.MM.YYYY H:MM
+      date_format: YYYY-MM-DD HH:MI:SS
+      note: Формат подтверждён на полном файле
     - name: till_mat_days
       severity: WARNING
       meaning: Дней до погашения
@@ -496,8 +496,8 @@ tables:
       severity: ERROR
       meaning: Дата, на которую актуальны данные
       type: date
-      date_format: DD.MM.YYYY
-      note: Формат DD.MM.YYYY
+      date_format: YYYY-MM-DD
+      note: Формат подтверждён на полном файле
     - name: key
       severity: ERROR
       meaning: Ключ записи (возможно, совпадает с кодом контракта — уточнить)
@@ -508,7 +508,7 @@ tables:
       severity: WARNING
       meaning: Операционная дата загрузки
       type: date
-      date_format: DD.MM.YYYY H:MI
+      date_format: YYYY-MM-DD HH:MI:SS
     presence_only:
     - descrip
     - descrip_ext
