@@ -159,7 +159,7 @@ tables:
       severity: WARNING
       meaning: Дата погашения (экспирации) инструмента
       type: date
-      date_format: DD.MM.YYYY H:MI
+      date_format: YYYY-MM-DD HH:MI:SS
     - name: open_net
       severity: WARNING
       meaning: Чистая позиция на начало дня
@@ -223,7 +223,7 @@ tables:
       meaning: Дата, на которую актуальны данные
       type: date
       date_format: YYYYMMDD
-      note: Формат YYYYMMDD, в остальных таблицах DD.MM.YYYY
+      note: Формат YYYYMMDD подтверждён на полном файле (в других таблицах YYYY-MM-DD)
     - name: key
       severity: ERROR
       meaning: Уникальный ключ записи (счёт + инструмент + UUID)
@@ -234,7 +234,7 @@ tables:
       severity: WARNING
       meaning: Операционная дата загрузки
       type: date
-      date_format: DD.MM.YYYY H:MI
+      date_format: YYYY-MM-DD HH:MI:SS
     presence_only:
     - partition_actualdate
   olb_rtsclients:
@@ -357,8 +357,8 @@ tables:
       severity: ERROR
       meaning: Дата, на которую актуальны данные
       type: date
-      date_format: DD.MM.YYYY
-      note: Формат DD.MM.YYYY
+      date_format: YYYY-MM-DD
+      note: Формат подтверждён на полном файле
     - name: key
       severity: ERROR
       meaning: Ключ записи (номер счёта без префикса RTS*)
@@ -369,7 +369,7 @@ tables:
       severity: WARNING
       meaning: Операционная дата загрузки
       type: date
-      date_format: DD.MM.YYYY H:MI
+      date_format: YYYY-MM-DD HH:MI:SS
     presence_only:
     - stock
     - partition_actualdate
@@ -538,8 +538,8 @@ tables:
       severity: ERROR
       meaning: Дата, на которую актуальны данные
       type: date
-      date_format: DD.MM.YYYY H:MI
-      note: Формат DD.MM.YYYY H:MM
+      date_format: YYYY-MM-DD HH:MI:SS
+      note: Формат подтверждён на полном файле
     - name: currency
       severity: ERROR
       meaning: Валюта
@@ -559,10 +559,10 @@ tables:
       severity: ERROR
       meaning: Дата погашения (экспирации)
       type: date
-      date_format: DD.MM.YYYY H:MI
-      note: Для бессрочных фьючерсов 01.01.1970 — заглушка, не ошибка
+      date_format: YYYY-MM-DD HH:MI:SS
+      note: Для бессрочных фьючерсов дата 1970-01-01 — заглушка, не ошибка
       sentinel_values:
-      - 01.01.1970
+      - '1970-01-01'
     - name: short_isin
       severity: ERROR
       meaning: Краткий код контракта
@@ -616,7 +616,7 @@ tables:
       severity: WARNING
       meaning: Операционная дата загрузки
       type: date
-      date_format: DD.MM.YYYY H:MI
+      date_format: YYYY-MM-DD HH:MI:SS
     presence_only:
     - central_strike
     - option_type
