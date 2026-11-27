@@ -111,6 +111,8 @@ th{color:var(--muted);font-weight:600;font-size:13px}tr:last-child td{border-bot
 .bar.ok{background:var(--ok)}.bar.warn{background:var(--warn)}.bar.err{background:var(--err)}.bar.run{background:var(--run)}
 .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
 .scroll{overflow-x:auto}button{background:var(--err);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer}
+select,input{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font:inherit}
+button.go{background:var(--run)}
 .summary{display:flex;gap:28px;flex-wrap:wrap}.summary div span{display:block;color:var(--muted);font-size:12px}
 """
 
@@ -134,16 +136,25 @@ def fmt_ms(ms):
 
 
 def page(title, body, refresh=True):
-    meta = '<meta http-equiv="refresh" content="5">' if refresh else ""
+    """refresh: True - обновлять страницу каждые 5 с, False - нет,
+    "smart" - обновлять, пока пользователь не выбрал файл или не открыл список."""
+    script = ""
+    if refresh == "smart":
+        meta = ""
+        script = ("<script>setInterval(function(){var f=document.getElementById('file');"
+                  "if(!(f&&f.value)&&!document.activeElement.matches('select,input'))"
+                  "location.reload()},5000)</script>")
+    else:
+        meta = '<meta http-equiv="refresh" content="5">' if refresh else ""
     return (f'<!doctype html><html lang="ru"><head><meta charset="utf-8">{meta}'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">'
             f"<title>{esc(title)}</title><style>{CSS}</style></head><body>"
             f'<header><h1><a href="/">Risk Process Orchestrator</a></h1>'
             f'<span class="muted">обновляется каждые 5 секунд</span></header>'
-            f"<main>{body}</main></body></html>")
+            f"<main>{body}</main>{script}</body></html>")
 
 
-def render_index(runs, state, demo_mode):
+def render_index(runs, state, demo_mode, extra_html="", refresh=True):
     if runs:
         rows = "".join(
             f'<tr><td><a class="row mono" href="/run/{esc(r[0])}">{esc(str(r[0])[:8])}…</a></td>'
@@ -159,10 +170,10 @@ def render_index(runs, state, demo_mode):
         reset = ('<form method="post" action="/reset" style="margin-top:12px" '
                  'onsubmit="return confirm(\'Удалить все запуски и данные в raw_/stg_?\')">'
                  "<button>Сбросить данные</button></form>")
-    body = (f'<div class="grid"><div class="card"><h2>Запуски процессов</h2>{runs_html}</div>'
+    body = (extra_html + f'<div class="grid"><div class="card"><h2>Запуски процессов</h2>{runs_html}</div>'
             f'<div class="card"><h2>Состояние БД (строк в таблицах)</h2>'
             f"<table><tr><th>Таблица</th><th>Строк</th></tr>{state_rows}</table>{reset}</div></div>")
-    return page("Запуски", body)
+    return page("Запуски", body, refresh)
 
 
 def render_run(data):
@@ -201,7 +212,7 @@ def render_run(data):
             f"<th>Шаг</th><th>Статус</th><th>Время</th><th></th><th>Прочитано</th><th>Загружено</th>"
             f"<th>Отклонено</th><th>Сообщение</th></tr>{step_rows}</table></div></div>"
             f'<div class="card"><h2>Найденные проблемы</h2>{issues_html}</div>{prev_html}')
-    return page("Запуск " + str(pid)[:8], body)
+    return page("Запуск " + str(pid)[:8], body, refresh=status in ("NEW", "IN_PROGRESS"))
 
 
 # ------------------------------------------------------------------ сервер
